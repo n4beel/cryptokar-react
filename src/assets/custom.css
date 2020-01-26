@@ -1,0 +1,51 @@
+.banner-area {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: url("/images/banner/banner-bg.jpg") center no-repeat;
+  background-size: cover;
+  position: relative;
+}
+.small-banner-area {
+  height: 70vh;
+  background: url("/images/banner/common-banner.jpg") center no-repeat;
+  background-size: cover;
+  position: relative;
+}
+.header_area .navbar {
+  max-width: 100% !important;
+  width: 100%;
+  padding: 10px;
+  position: fixed;
+}
+.splash {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.name-dropdown {
+  border: none;
+  background: inherit;
+}
+.dropdown-custom {
+  right: -74px;
+  left: unset !important;
+}
+.light-color {
+  color: #777 !important;
+}
+.product-details h6 {
+  color: #222 !important;
+}
+.product-details h6:hover {
+  text-decoration: none !important;
+}
+.car-image {
+  max-width: 100%;
+}
+#myTab {
+  text-align: left !important;
+  padding-left: 10px !important;
+}

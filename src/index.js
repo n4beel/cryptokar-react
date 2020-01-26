@@ -11,9 +11,8 @@ import { reduxFirestore, getFirestore, createFirestoreInstance } from 'redux-fir
 import { ReactReduxFirebaseProvider, getFirebase, isLoaded } from 'react-redux-firebase'
 import firebaseConfig from './config/firebaseConfig'
 import firebase from 'firebase/app';
-import loader from './assets/images/loader.gif'
-
-
+import loader from './assets/images/loader.gif';
+import './assets/custom.css'
 
 const store = createStore(
     rootReducer,
