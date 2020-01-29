@@ -6,6 +6,7 @@ import { compose } from "redux";
 import { connect } from "react-redux";
 import { firestoreConnect } from "react-redux-firebase";
 import Web3 from "web3";
+import sha256 from "sha256"
 
 let web3js = "";
 
@@ -18,21 +19,6 @@ let ethereum = "";
 
 const initContract = () => {
   contract = new web3js.eth.Contract([
-    {
-      "constant": false,
-      "inputs": [],
-      "name": "getListOfHashes",
-      "outputs": [
-        {
-          "internalType": "string[]",
-          "name": "",
-          "type": "string[]"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
     {
       "constant": false,
       "inputs": [
@@ -62,14 +48,34 @@ const initContract = () => {
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getListOfHashes",
+      "outputs": [
+        {
+          "internalType": "string[]",
+          "name": "",
+          "type": "string[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
     }
-  ], "0x4abC2d715848215dF79B3131B6b945343Fb05996")
+  ], "0xa7F318F296603482Cb96Eb7AF942775035154559")
   console.log(contract)
 }
 
 
+
+
+
 const CarDetails = props => {
   const [accountAddress, setAccountAddress] = useState("");
+  const [hash,setHash] = useState("");
+  let { car,auth } = props;
 
   useEffect(async () => {
     ethereum = window.ethereum;
@@ -96,9 +102,41 @@ const CarDetails = props => {
     console.log(network);
   }
 
-  let { car } = props;
+
+
+  const issueCar = async (hashedData) => {
+    try {
+      console.log(typeof hashedData)
+        let getData = await contract.methods.issueCar(hashedData).send({from:accountAddress});
+        let getList = await contract.methods.getListOfHashes().call();
+  
+        console.log(getList)
+        return getList
+    } catch (e) {
+        console.log(e)
+    }
+  }
+
+  const onBuy = async () => {
+    if(accountAddress){
+      const dataToHash = {
+        ...car,
+        ...auth,
+        timestamp:Date.now()
+      }
+      const hashedData = sha256(JSON.stringify(dataToHash))
+      console.log(hashedData)
+      setHash(hashedData)
+      const res = await issueCar(hashedData)
+      console.log("res ==>",res)
+    }
+    else{
+      alert("Please connect to Metamask to continue !!")
+    }
+  }
+
   if (car) {
-    console.log('car ==>',car)
+    console.log('car ==>',auth)
     return (
       <div>
         <Navbar />
@@ -132,7 +170,7 @@ const CarDetails = props => {
                   <h2>{car.price}</h2>
                   <p>{car.description}</p>
                   <div className="card_area d-flex align-items-center">
-                    <a className="primary-btn" href="javascript:void(0)">
+                    <a className="primary-btn" href="javascript:void(0)" onClick={()=>onBuy()} >
                       Buy
                     </a>
                   </div>
@@ -327,7 +365,7 @@ const mapStateToProps = (state, ownProps) => {
   const car = cars ? cars[id] : null;
   return {
     car: car,
-    auth: state.firebase.auth
+    auth: state.firebase.profile
   };
 };
 
