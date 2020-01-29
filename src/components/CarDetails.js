@@ -7,6 +7,7 @@ import { connect } from "react-redux";
 import { firestoreConnect } from "react-redux-firebase";
 import Web3 from "web3";
 import sha256 from "sha256"
+import { registerCar } from "../store/actions/carActions";
 
 let web3js = "";
 
@@ -17,7 +18,7 @@ let accounts = "";
 let ethereum = "";
 
 
-const initContract = () => {
+const initContract = props => {
   contract = new web3js.eth.Contract([
     {
       "constant": false,
@@ -74,8 +75,10 @@ const initContract = () => {
 
 const CarDetails = props => {
   const [accountAddress, setAccountAddress] = useState("");
-  const [hash,setHash] = useState("");
-  let { car,auth } = props;
+  const [hash, setHash] = useState("");
+  let { car, auth, user } = props;
+  const path = window.location.href;
+  const carId = path.substring(path.lastIndexOf('/') + 1);
 
   useEffect(async () => {
     ethereum = window.ethereum;
@@ -106,37 +109,38 @@ const CarDetails = props => {
 
   const issueCar = async (hashedData) => {
     try {
-      console.log(typeof hashedData)
-        let getData = await contract.methods.issueCar(hashedData).send({from:accountAddress});
-        let getList = await contract.methods.getListOfHashes().call();
-  
-        console.log(getList)
-        return getList
+      // console.log(typeof hashedData)
+      let getData = await contract.methods.issueCar(hashedData).send({ from: accountAddress });
+      let getList = await contract.methods.getListOfHashes().call();
+
+      // console.log(getList)
+      return getList
     } catch (e) {
-        console.log(e)
+      console.log(e)
     }
   }
 
   const onBuy = async () => {
-    if(accountAddress){
+    if (accountAddress) {
       const dataToHash = {
         ...car,
         ...auth,
-        timestamp:Date.now()
+        timestamp: Date.now()
       }
       const hashedData = sha256(JSON.stringify(dataToHash))
       console.log(hashedData)
       setHash(hashedData)
       const res = await issueCar(hashedData)
-      console.log("res ==>",res)
+      // console.log("res ==>", res);
+      props.registerCar({ res, car, carId });
     }
-    else{
+    else {
       alert("Please connect to Metamask to continue !!")
     }
   }
 
   if (car) {
-    console.log('car ==>',auth)
+    console.log('car ==>', auth)
     return (
       <div>
         <Navbar />
@@ -170,9 +174,19 @@ const CarDetails = props => {
                   <h2>{car.price}</h2>
                   <p>{car.description}</p>
                   <div className="card_area d-flex align-items-center">
-                    <a className="primary-btn" href="javascript:void(0)" onClick={()=>onBuy()} >
-                      Buy
-                    </a>
+                    {
+                      console.log(user)
+
+                    }
+                    {
+
+                      user ?
+                        <a className="primary-btn" href="javascript:void(0)" onClick={() => onBuy()} >
+                          Buy
+                        </a>
+                        : <p>Please, login to buy!</p>
+                    }
+
                   </div>
                 </div>
               </div>
@@ -365,11 +379,19 @@ const mapStateToProps = (state, ownProps) => {
   const car = cars ? cars[id] : null;
   return {
     car: car,
-    auth: state.firebase.profile
+    auth: state.firebase.profile,
+    user: state.firebase.auth.uid
   };
 };
 
+
+const mapDispatchToProps = dispatch => {
+  return {
+    registerCar: details => dispatch(registerCar(details))
+  }
+}
+
 export default compose(
-  connect(mapStateToProps),
+  connect(mapStateToProps, mapDispatchToProps),
   firestoreConnect([{ collection: "cars" }])
 )(CarDetails);

@@ -31,7 +31,7 @@ const Buy = props => {
                             {
                                 cars && cars.map(car => {
                                     return (
-                                        auth.uid !== car.userUid ?
+                                        auth.uid !== car.userUid && car.status === 'active' ?
 
                                             <div key={car.id} className="col-lg-3 col-md-6">
                                                 <Link to={"/car/" + car.id}>

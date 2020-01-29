@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { signUp } from '../store/actions/authActions';
 
@@ -26,6 +26,9 @@ class Signup extends Component {
     }
 
     render() {
+        const { auth } = this.props;
+        if (auth.uid) return <Redirect to='/' />
+
         return (
             <div>
                 <section className="login_box_area">
